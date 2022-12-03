@@ -1,0 +1,17 @@
+
+
+# Distribution / packaging
+data/
+excise/
+logs/
+models/
+results/
+tensorboard/
+
+
+
+# Environments
+.env
+.venv
+env/
+venv/
