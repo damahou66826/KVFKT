@@ -15,9 +15,9 @@ logger = getLogger('KVFKT-model')
 
 # argument parser
 parser = argparse.ArgumentParser()
-# dataset can be assist2009, assist2015, statics2011, synthetic, fsai, NeurIPS
+# dataset can be assist2009, assist2015, statics2011, assist2017, fsai, NeurIPS
 parser.add_argument('--dataset', default='NeurIPS',
-                    help="'assist2009', 'assist2015', 'statics2011', 'synthetic', 'fsai','NeurIPS'")
+                    help="'assist2009', 'assist2015', 'statics2011', 'assist2017', 'fsai','NeurIPS'")
 
 parser.add_argument('--save', type=bool, default=False)
 parser.add_argument('--cpu', type=bool, default=False)
@@ -42,6 +42,7 @@ parser.add_argument('--key_memory_state_dim', type=int, default=None)
 parser.add_argument('--value_memory_state_dim', type=int, default=None)  # ？？？？
 parser.add_argument('--forget_memory_state_dim', type=int, default=None)
 parser.add_argument('--summary_vector_output_dim', type=int, default=None)
+parser.add_argument('--forget_cycle', type=int, default=60000)
 
 _args = parser.parse_args()
 ##############################8-7#######################

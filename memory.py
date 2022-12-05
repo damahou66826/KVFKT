@@ -18,12 +18,13 @@ logger = getLogger('zijideming')
 
 
 class MemoryHeadGroup():
-    def __init__(self, memory_size, memory_state_dim, is_write, forget_matrix, name="DKVMN-HEAD"):
+    def __init__(self, memory_size, memory_state_dim, is_write, forget_matrix, name="DKVMN-HEAD" , forget_cycle = 6000):
         self.name = name
         self.memory_size = memory_size
         self.memory_state_dim = memory_state_dim
         self.is_write = is_write
         self.forget_matrix = forget_matrix
+        self.forget_cycle = forget_cycle
 
     # 计算当前的题目与学生概念储备的相关性  （查询向量与key矩阵的操作）
     # key_memory_state_dim 为表示每个问题的知识点数量
@@ -97,7 +98,7 @@ class MemoryHeadGroup():
         # https://zhuanlan.zhihu.com/p/445497724
         # Retention = -FI / ln(1 - FI)    遗忘指数与保留率之间的关系  × （不采用）
         # FI =  R = exp(-t / S)  遗忘指数  ==》 采用指数式遗忘
-        S = 3600000  # 一小时为间隔设置遗忘周期  (也即假设1小时不记忆知识点  就会遗忘光)
+        S = self.forget_cycle  # 一小时为间隔设置遗忘周期  (也即假设1小时不记忆知识点  就会遗忘光)
         tempMatrix = tf.constant([[-1]], dtype=float)
         tempMatrix = tf.tile(tempMatrix, [time.shape[0], time.shape[1]])
         time = tf.multiply(time, tempMatrix)  # -t
@@ -156,7 +157,7 @@ class MemoryHeadGroup():
 
 class DKVMN():
     def __init__(self, memory_size, key_memory_state_dim, value_memory_state_dim, forget_memory_state_dim,
-                 init_key_memory=None, init_value_memory=None, init_forget_memory=None, name="DKVMN"):
+                 init_key_memory=None, init_value_memory=None, init_forget_memory=None, name="DKVMN" , forget_cycle = 60000):
         '''
 
         :param memory_size:    知识点个数
@@ -167,6 +168,7 @@ class DKVMN():
         :param init_value_memory:        初始化学生知识点矩阵(batch_size,[知识点矩阵])
         :param init_forget_memory:       初始化学生与知识点对应的遗忘矩阵 (batch_size, memory_size)
         :param name:
+        :param forget_cycle:     遗忘周期
         '''
         self.name = name
         self.memory_size = memory_size
@@ -181,11 +183,11 @@ class DKVMN():
         # 分别初始化key head与value head  其中key_head没有相关读取功能
         self.key_head = MemoryHeadGroup(
             self.memory_size, self.key_memory_state_dim, forget_matrix=self.forget_memory_matrix,
-            name=self.name + '-KeyHead', is_write=False
+            name=self.name + '-KeyHead', is_write=False , forget_cycle = forget_cycle
         )
         self.value_head = MemoryHeadGroup(
             self.memory_size, self.value_memory_state_dim, forget_matrix=self.forget_memory_matrix,
-            name=self.name + '-ValueHead', is_write=True
+            name=self.name + '-ValueHead', is_write=True , forget_cycle = forget_cycle
         )
 
     def attention(self, embedded_query_vector):

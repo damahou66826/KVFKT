@@ -107,7 +107,8 @@ class KVFKTModel(object):
             init_key_memory=init_key_memory,
             init_value_memory=init_value_memory,
             init_forget_memory=init_forget_memory,
-            name="DKVMN"
+            name="DKVMN",
+            forget_cycle = self.args.forget_cycle
         )
 
         # Initialize Embedding
