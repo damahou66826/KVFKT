@@ -8,10 +8,10 @@ class ModelConfigFactory():
             return JunyiConfig(args).get_args()
         elif args.dataset == 'assist2017':
             return Assist2017Config(args).get_args()
+        elif args.dataset == 'assist2012':
+            return Assist2012Config(args).get_args()
         elif args.dataset == 'fsai':
             return FSAIConfig(args).get_args()
-        elif args.dataset == 'test_te':
-            return TEST_TE(args).get_args()
         elif args.dataset == 'NeurIPS':
             return NeurIPSConfig(args).get_args()
         else:
@@ -93,12 +93,12 @@ class JunyiConfig(ModelConfig):
             'batch_size': 32,
             'train': True,
             'show': True,
-            'learning_rate': 0.003,
+            'learning_rate': 0.03,
             'max_grad_norm': 10.0,
             'use_ogive_model': False,
             # dataset param
-            'seq_len': 200,
-            'n_questions': 110,
+            'seq_len': 50,
+            'n_questions': 1332,
             'data_dir': './data/Junyi',
             'data_name': 'Junyi',
             # DKVMN param
@@ -106,7 +106,7 @@ class JunyiConfig(ModelConfig):
             'key_memory_state_dim': 50,
             'value_memory_state_dim': 100,
             'summary_vector_output_dim': 50,
-            'forget_cycle': 60000,
+            'forget_cycle': 6000,
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,
@@ -126,16 +126,46 @@ class Assist2017Config(ModelConfig):
             'train': True,
             'show': True,
             #'learning_rate': 0.003,
-            'learning_rate': 0.3,
+            'learning_rate': 0.00001,
             'max_grad_norm': 10.0,
             'use_ogive_model': False,
             # dataset param
-            'seq_len': 200,
+            'seq_len': 50,
             'n_questions': 150,
             'data_dir': './data/ASSISTments2017',
             'data_name': 'ASSISTments2017',
             # DKVMN param
-            'memory_size': 150,
+            'memory_size': 50,
+            'key_memory_state_dim': 50,
+            'value_memory_state_dim': 100,
+            'summary_vector_output_dim': 50,
+            'forget_cycle': 60000,
+            # parameter for the SA Network and KCD network
+            'student_ability_layer_structure': None,
+            'question_difficulty_layer_structure': None,
+            'discimination_power_layer_structure': None
+        }
+        return default_setting
+
+class Assist2012Config(ModelConfig):
+    def get_default_setting(self):
+        default_setting = {
+            # training setting
+            'n_epochs': 10,
+            'batch_size': 50,
+            'train': True,
+            'show': True,
+            #'learning_rate': 0.003,
+            'learning_rate': 0.00001,
+            'max_grad_norm': 10.0,
+            'use_ogive_model': False,
+            # dataset param
+            'seq_len': 50,
+            'n_questions': 150,
+            'data_dir': './data/ASSISTments2012',
+            'data_name': 'ASSISTments2012',
+            # DKVMN param
+            'memory_size': 50,
             'key_memory_state_dim': 50,
             'value_memory_state_dim': 100,
             'summary_vector_output_dim': 50,
@@ -187,7 +217,7 @@ class NeurIPSConfig(ModelConfig):
             'batch_size': 32,
             'train': True,
             'show': True,
-            'learning_rate': 0.003,
+            'learning_rate': 0.03,
             'max_grad_norm': 10.0,
             'use_ogive_model': False,
             # dataset param

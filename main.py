@@ -17,7 +17,7 @@ logger = getLogger('KVFKT-model')
 parser = argparse.ArgumentParser()
 # dataset can be assist2009, assist2015, statics2011, assist2017, fsai, NeurIPS
 parser.add_argument('--dataset', default='NeurIPS',
-                    help="'assist2009', 'assist2015', 'statics2011', 'assist2017', 'fsai','NeurIPS'")
+                    help="'assist2017','assist2012', 'Junyi', 'fsai','NeurIPS'")
 
 parser.add_argument('--save', type=bool, default=False)
 parser.add_argument('--cpu', type=bool, default=False)
