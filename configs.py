@@ -110,7 +110,10 @@ class JunyiConfig(ModelConfig):
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,
-            'discimination_power_layer_structure': None
+            'discimination_power_layer_structure': None,
+            # parameter for the forget matrix
+            'max_random_time': 1533080800.,
+            'min_random_time': 1533080400.
         }
         return default_setting
 
@@ -121,12 +124,12 @@ class Assist2017Config(ModelConfig):
     def get_default_setting(self):
         default_setting = {
             # training setting
-            'n_epochs': 10,
-            'batch_size': 50,
+            'n_epochs': 20,
+            'batch_size': 32,
             'train': True,
             'show': True,
             #'learning_rate': 0.003,
-            'learning_rate': 0.00001,
+            'learning_rate': 0.003,
             'max_grad_norm': 10.0,
             'use_ogive_model': False,
             # dataset param
@@ -135,15 +138,18 @@ class Assist2017Config(ModelConfig):
             'data_dir': './data/ASSISTments2017',
             'data_name': 'ASSISTments2017',
             # DKVMN param
-            'memory_size': 50,
+            'memory_size': 150,
             'key_memory_state_dim': 50,
             'value_memory_state_dim': 100,
             'summary_vector_output_dim': 50,
-            'forget_cycle': 60000,
+            'forget_cycle': 600000000,
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,
-            'discimination_power_layer_structure': None
+            'discimination_power_layer_structure': None,
+            # parameter for the forget matrix
+            'max_random_time' : 1095421300.,
+            'min_random_time' : 1095421000.
         }
         return default_setting
 
@@ -161,7 +167,7 @@ class Assist2012Config(ModelConfig):
             'use_ogive_model': False,
             # dataset param
             'seq_len': 50,
-            'n_questions': 150,
+            'n_questions': 500,
             'data_dir': './data/ASSISTments2012',
             'data_name': 'ASSISTments2012',
             # DKVMN param
@@ -173,7 +179,10 @@ class Assist2012Config(ModelConfig):
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,
-            'discimination_power_layer_structure': None
+            'discimination_power_layer_structure': None,
+            # parameter for the forget matrix
+            'max_random_time': 1095421100.,
+            'min_random_time': 1095421000.
         }
         return default_setting
 
@@ -191,19 +200,22 @@ class FSAIConfig(ModelConfig):
             'use_ogive_model': False,
             # dataset param
             'seq_len': 50,
-            'n_questions': 1200,
+            'n_questions': 2267,
             'data_dir': './data/fsaif1tof3',
             'data_name': 'fsaif1tof3',
             # DKVMN param
-            'memory_size': 50,
-            'key_memory_state_dim': 50,
+            'memory_size': 2267,
+            'key_memory_state_dim': 150,
             'value_memory_state_dim': 100,
             'summary_vector_output_dim': 50,
-            'forget_cycle': 60000,
+            'forget_cycle': 6000000,
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,
-            'discimination_power_layer_structure': None
+            'discimination_power_layer_structure': None,
+            # parameter for the forget matrix
+            'max_random_time': 1535485000.,
+            'min_random_time': 1535483300.
         }
         return default_setting
 
@@ -217,7 +229,7 @@ class NeurIPSConfig(ModelConfig):
             'batch_size': 32,
             'train': True,
             'show': True,
-            'learning_rate': 0.03,
+            'learning_rate': 0.003,
             'max_grad_norm': 10.0,
             'use_ogive_model': False,
             # dataset param
@@ -234,6 +246,9 @@ class NeurIPSConfig(ModelConfig):
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,
-            'discimination_power_layer_structure': None
+            'discimination_power_layer_structure': None,
+            # parameter for the forget matrix
+            'max_random_time': 1568000000.,
+            'min_random_time': 1400000000.
         }
         return default_setting

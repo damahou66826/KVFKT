@@ -73,7 +73,7 @@ class DataLoader():
                             a_value = int(a_tag_list[i])
                             t_value = int(t_tag_list[i])
 
-                            qa_value = q_value + a_value * self.n_questions
+                            qa_value = int(q_value + a_value * self.n_questions)
                             q_container.append(q_value)
                             qa_container.append(qa_value)
                             t_container.append(t_value)
@@ -159,53 +159,6 @@ class DataLoader():
             print("已经完成了第{}个了.....".format(i))
         # 用该方法可以  但是会卡顿一会
         with open("./data/oper_ok.csv", 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            for row in target:
-                writer.writerow(row)
-
-    def other_dataset_process(self):
-        '''
-        对原先数据格式进行预处理
-        Args:
-            path:
-
-        Returns:
-
-        '''
-        # train_data_path = os.path.join(args.data_dir, args.data_name + '_train{}.csv'.format(i))
-        # 进行相应的预处理，处理成对应文件的格式
-        # newPath = "./data/student_answer_datail.csv"
-        # train_task = pd.read_csv("D:\\AAAAA暨大研究生\\智慧教育\\预选数据集\\train_task_3_4.csv")
-        # answer_metadata_task = pd.read_csv("D:\\AAAAA暨大研究生\\智慧教育\\预选数据集\\answer_metadata_task_3_4.csv")
-        # student_answer_detail = pd.merge(train_task, answer_metadata_task, on='AnswerId', how='inner')
-        # student_answer_detail.sort_values(by='DateAnswered').sort_values(by='UserId').to_csv(newPath, index=0)
-        student_answer_detail = pd.read_csv("./data/student_answer_datail.csv")
-        # 得到UserId集合
-        student_num = student_answer_detail['UserId'].unique()
-        print(student_num)
-        target = []
-        for i in student_num:
-            # 拿到学生i对应题目的做对与做错情况
-            tempDf = student_answer_detail[student_answer_detail.UserId == i].loc[:,
-                     ['QuestionId', 'IsCorrect']]
-            tempDf = pd.DataFrame(tempDf.values.T, index=tempDf.columns, columns=tempDf.index)
-            if (tempDf.shape[1] == 0):
-                continue
-            '''
-                这里要将数据每一份分为50个
-            '''
-            excise_num_sum = tempDf.shape[1] - 1
-            per_excise_num = 50
-            excise_portion = excise_num_sum // per_excise_num
-            problem_id = tempDf.values[0].tolist()
-            correctness = tempDf.values[1].tolist()
-            for j in range(excise_portion - 1):
-                target.append([50])
-                target.append(problem_id[j * 50: (j + 1) * 50])
-                target.append(correctness[j * 50: (j + 1) * 50])
-            print("已经完成了第{}个了.....".format(i))
-        # 用该方法可以  但是会卡顿一会
-        with open("./data/baseline_oper_ok.csv", 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             for row in target:
                 writer.writerow(row)

@@ -80,9 +80,12 @@ class KVFKTModel(object):
             )
             init_forget_memory = tf.get_variable(
                 'forget_memory_matrix', [self.args.memory_size],
-                initializer=tf.random_uniform_initializer(maxval=1568000000., minval=1567000000., seed=0)
+                # initializer=tf.random_uniform_initializer(maxval=1568000000., minval=1400000000., seed=0)    # NeurIPS
+                # initializer=tf.random_uniform_initializer(maxval=1535485000., minval=1535483300., seed=0)    # fsaif1tof3
+                # initializer=tf.random_uniform_initializer(maxval=1095421100., minval=1095421000., seed=0)
+                initializer = tf.random_uniform_initializer(maxval=self.args.max_random_time, minval=self.args.min_random_time, seed=0)
             )
-            #1568000000
+            # 1568000000
         init_value_memory = tf.tile(
             # tile the number of value-memory by the number of batch
             tf.expand_dims(init_value_memory, 0),  # make the batch-axis
@@ -108,7 +111,7 @@ class KVFKTModel(object):
             init_value_memory=init_value_memory,
             init_forget_memory=init_forget_memory,
             name="DKVMN",
-            forget_cycle = self.args.forget_cycle
+            forget_cycle=self.args.forget_cycle
         )
 
         # Initialize Embedding
@@ -125,22 +128,16 @@ class KVFKTModel(object):
                 'qa_embed', [2 * self.args.n_questions + 1, self.args.value_memory_state_dim],
                 initializer=tf.truncated_normal_initializer(stddev=0.1)
             )
-            # # 遗忘矩阵嵌入初始化
-            # f_embed_matrix = tf.get_variable(
-            #     'f_embd', [2 * self.args.n_questions + 1, self.args.value_memory_state_dim],
-            #     initializer=tf.truncated_normal_initializer(stddev=0.1)
-            # )
+
         # Embedding to Shape (batch size, seq_len, memory_state_dim(d_k or d_v))
         #   !!!!!!========================================!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #      对输入的问题矩阵与问题答案矩阵进行嵌入表示
         logger.info("Initializing Embedding Lookup")
         q_embed_data = tf.nn.embedding_lookup(q_embed_matrix, self.q_data)
         qa_embed_data = tf.nn.embedding_lookup(qa_embed_matrix, self.qa_data)
-        # f_embed_data = tf.nn.embedding_lookup(f_embed_matrix, self.t_data)
 
         logger.debug("Shape of q_embed_data: {}".format(q_embed_data.get_shape()))
         logger.debug("Shape of qa_embed_data: {}".format(qa_embed_data.get_shape()))
-        # logger.debug("Shape of f_embed_data: {}".format(f_embed_data.get_shape()))
 
         sliced_q_embed_data = tf.split(
             # 从第一维度开始分割 ，准备切成args.seq_len份
@@ -172,7 +169,7 @@ class KVFKTModel(object):
             qa = tf.squeeze(sliced_qa_embed_data[i], 1)
             fg = tf.squeeze(sliced_f_embed_data[i], 1)  # 加入遗忘元素  ===> (1 * batch_size)
 
-            #print(fg)  # Tensor("Squeeze_2:0", shape=(32, 100), dtype=float32)
+            # print(fg)  # Tensor("Squeeze_2:0", shape=(32, 100), dtype=float32)
             logger.debug("qeury vector q: {}".format(q))
             logger.debug("content vector qa: {}".format(qa))
 
@@ -225,10 +222,7 @@ class KVFKTModel(object):
             )
 
             # Prediction
-            #print("self.args.seq_len = {}".format(self.args.seq_len))
-            #print("self.args.batch_size = {}".format(self.args.batch_size))
             pred_z_value = 3.0 * student_ability - question_difficulty
-            #print(pred_z_value)
             pred_z_values.append(pred_z_value)
             student_abilities.append(student_ability)
             question_difficulties.append(question_difficulty)

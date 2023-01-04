@@ -44,6 +44,10 @@ parser.add_argument('--forget_memory_state_dim', type=int, default=None)
 parser.add_argument('--summary_vector_output_dim', type=int, default=None)
 parser.add_argument('--forget_cycle', type=int, default=60000)
 
+# parameter for forget matrix
+parser.add_argument('--max_random_time', type=int, default=1095421100.)
+parser.add_argument('--min_random_time', type=int, default=1095421000.)
+
 _args = parser.parse_args()
 ##############################8-7#######################
 args = ModelConfigFactory.create_model_config(_args)

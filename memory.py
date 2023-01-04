@@ -81,11 +81,10 @@ class MemoryHeadGroup():
         retention_rate_forget_matrix = tf.reshape(retention_rate_forget_matrix, [_batch_size, self.memory_size, 1])
         retention_rate_forget_matrix = tf.tile(retention_rate_forget_matrix, [1, 1, self.memory_state_dim])
 
-        # 点乘
+        # dot
+        #temp_value_memory_matrix = tf.multiply(value_memory_matrix, retention_rate_forget_matrix)
+        #new_value_memory_matrix = tf.nn.softmax(temp_value_memory_matrix)
         new_value_memory_matrix = tf.multiply(value_memory_matrix, retention_rate_forget_matrix)
-        # test
-        # with tf.Session() as sess:
-        #     print(sess.run(new_value_memory_matrix))
         self.forget_matrix = nowTime_matrix
         return new_value_memory_matrix
 
