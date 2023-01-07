@@ -89,11 +89,11 @@ class JunyiConfig(ModelConfig):
         default_setting = {
             # training setting
             #开始都是50
-            'n_epochs': 5,
+            'n_epochs': 12,
             'batch_size': 32,
             'train': True,
             'show': True,
-            'learning_rate': 0.03,
+            'learning_rate': 0.0003,
             'max_grad_norm': 10.0,
             'use_ogive_model': False,
             # dataset param
@@ -106,7 +106,7 @@ class JunyiConfig(ModelConfig):
             'key_memory_state_dim': 50,
             'value_memory_state_dim': 100,
             'summary_vector_output_dim': 50,
-            'forget_cycle': 6000,
+            'forget_cycle': 60000,
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,
@@ -129,7 +129,7 @@ class Assist2017Config(ModelConfig):
             'train': True,
             'show': True,
             #'learning_rate': 0.003,
-            'learning_rate': 0.003,
+            'learning_rate': 0.0002,
             'max_grad_norm': 10.0,
             'use_ogive_model': False,
             # dataset param
@@ -138,11 +138,11 @@ class Assist2017Config(ModelConfig):
             'data_dir': './data/ASSISTments2017',
             'data_name': 'ASSISTments2017',
             # DKVMN param
-            'memory_size': 150,
+            'memory_size': 50,
             'key_memory_state_dim': 50,
             'value_memory_state_dim': 100,
             'summary_vector_output_dim': 50,
-            'forget_cycle': 600000000,
+            'forget_cycle': 6000000,
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,
@@ -153,6 +153,8 @@ class Assist2017Config(ModelConfig):
         }
         return default_setting
 
+
+# best
 class Assist2012Config(ModelConfig):
     def get_default_setting(self):
         default_setting = {
@@ -162,7 +164,7 @@ class Assist2012Config(ModelConfig):
             'train': True,
             'show': True,
             #'learning_rate': 0.003,
-            'learning_rate': 0.00001,
+            'learning_rate': 0.0001,
             'max_grad_norm': 10.0,
             'use_ogive_model': False,
             # dataset param
@@ -181,8 +183,8 @@ class Assist2012Config(ModelConfig):
             'question_difficulty_layer_structure': None,
             'discimination_power_layer_structure': None,
             # parameter for the forget matrix
-            'max_random_time': 1095421100.,
-            'min_random_time': 1095421000.
+            'max_random_time': 1346428800.,
+            'min_random_time': 1346428000.
         }
         return default_setting
 
@@ -195,7 +197,7 @@ class FSAIConfig(ModelConfig):
             'batch_size': 32,
             'train': True,
             'show': True,
-            'learning_rate': 0.003,
+            'learning_rate': 0.0003,
             'max_grad_norm': 10.0,
             'use_ogive_model': False,
             # dataset param
@@ -204,11 +206,11 @@ class FSAIConfig(ModelConfig):
             'data_dir': './data/fsaif1tof3',
             'data_name': 'fsaif1tof3',
             # DKVMN param
-            'memory_size': 2267,
+            'memory_size': 50,
             'key_memory_state_dim': 150,
             'value_memory_state_dim': 100,
             'summary_vector_output_dim': 50,
-            'forget_cycle': 6000000,
+            'forget_cycle': 60000000,
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,
@@ -242,7 +244,7 @@ class NeurIPSConfig(ModelConfig):
             'key_memory_state_dim': 50,
             'value_memory_state_dim': 100,
             'summary_vector_output_dim': 50,
-            'forget_cycle': 60000,
+            'forget_cycle': 6000000,
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,

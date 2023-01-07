@@ -159,7 +159,7 @@ def cross_validation():
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
     aucs, accs, losses = list(), list(), list()
     # 跑5组对应的训练集与验证集    选择最优的哪个
-    for i in range(1):  # 默认为5
+    for i in range(5):  # 默认为5
         # 每次都会重新清除已有的node
         # tf.reset_default_graph()  deprecated
         tf.compat.v1.reset_default_graph()
