@@ -15,9 +15,9 @@ logger = getLogger('KVFKT-model')
 
 # argument parser
 parser = argparse.ArgumentParser()
-# dataset can be assist2009, assist2015, statics2011, assist2017, fsai, NeurIPS
+# dataset can be assist2009, assist2015, statics2011, assist2017, fsai, NeurIPS,EdNet
 parser.add_argument('--dataset', default='NeurIPS',
-                    help="'assist2017','assist2012', 'Junyi', 'fsai','NeurIPS'")
+                    help="'assist2017','assist2012', 'Junyi', 'fsai','NeurIPS','EdNet'")
 
 parser.add_argument('--save', type=bool, default=False)
 parser.add_argument('--cpu', type=bool, default=False)
@@ -42,11 +42,11 @@ parser.add_argument('--key_memory_state_dim', type=int, default=None)
 parser.add_argument('--value_memory_state_dim', type=int, default=None)  # ？？？？
 parser.add_argument('--forget_memory_state_dim', type=int, default=None)
 parser.add_argument('--summary_vector_output_dim', type=int, default=None)
-parser.add_argument('--forget_cycle', type=int, default=60000)
+parser.add_argument('--forget_cycle', type=int, default=None)
 
 # parameter for forget matrix
-parser.add_argument('--max_random_time', type=int, default=1095421100.)
-parser.add_argument('--min_random_time', type=int, default=1095421000.)
+parser.add_argument('--max_random_time', type=int, default=None)
+parser.add_argument('--min_random_time', type=int, default=None)
 
 _args = parser.parse_args()
 ##############################8-7#######################
@@ -158,7 +158,7 @@ def cross_validation():
     if args.cpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
     aucs, accs, losses = list(), list(), list()
-    # 跑5组对应的训练集与验证集    选择最优的哪个
+    # 跑5组对应的训练集与验证集    取平均
     for i in range(5):  # 默认为5
         # 每次都会重新清除已有的node
         # tf.reset_default_graph()  deprecated
@@ -206,6 +206,8 @@ def cross_validation():
     result_msg += str(args.key_memory_state_dim) + ','
     result_msg += str(args.value_memory_state_dim) + ','
     result_msg += str(args.summary_vector_output_dim) + ','
+    result_msg += str(args.forget_cycle) + ','
+    result_msg += str(args.learning_rate) + ','
     result_msg += str(np.average(aucs) * 100) + ','
     result_msg += str(np.std(aucs) * 100) + ','
     result_msg += str(np.average(accs) * 100) + ','

@@ -14,6 +14,10 @@ class ModelConfigFactory():
             return FSAIConfig(args).get_args()
         elif args.dataset == 'NeurIPS':
             return NeurIPSConfig(args).get_args()
+        elif args.dataset == 'EdNet':
+            return EdNetConfig(args).get_args()
+        elif args.dataset == 'Statics2011':
+            return Statics2011Config(args).get_args()
         else:
             raise ValueError("The '{}' is not available".format(args.dataset))
 
@@ -112,7 +116,7 @@ class JunyiConfig(ModelConfig):
             'question_difficulty_layer_structure': None,
             'discimination_power_layer_structure': None,
             # parameter for the forget matrix
-            'max_random_time': 1533080800.,
+            'max_random_time': 1533080600.,
             'min_random_time': 1533080400.
         }
         return default_setting
@@ -139,17 +143,17 @@ class Assist2017Config(ModelConfig):
             'data_name': 'ASSISTments2017',
             # DKVMN param
             'memory_size': 50,
-            'key_memory_state_dim': 50,
+            'key_memory_state_dim': 150,
             'value_memory_state_dim': 100,
             'summary_vector_output_dim': 50,
-            'forget_cycle': 6000000,
+            'forget_cycle': 600,
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,
             'discimination_power_layer_structure': None,
             # parameter for the forget matrix
             'max_random_time' : 1095421300.,
-            'min_random_time' : 1095421000.
+            'min_random_time' : 1095420000.
         }
         return default_setting
 
@@ -193,11 +197,11 @@ class FSAIConfig(ModelConfig):
     def get_default_setting(self):
         default_setting = {
             # training setting
-            'n_epochs': 15,
+            'n_epochs': 10,
             'batch_size': 32,
             'train': True,
             'show': True,
-            'learning_rate': 0.0003,
+            'learning_rate': 0.003,
             'max_grad_norm': 10.0,
             'use_ogive_model': False,
             # dataset param
@@ -210,14 +214,14 @@ class FSAIConfig(ModelConfig):
             'key_memory_state_dim': 150,
             'value_memory_state_dim': 100,
             'summary_vector_output_dim': 50,
-            'forget_cycle': 60000000,
+            'forget_cycle': 60000000000,
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,
             'discimination_power_layer_structure': None,
             # parameter for the forget matrix
             'max_random_time': 1535485000.,
-            'min_random_time': 1535483300.
+            'min_random_time': 1535484800.
         }
         return default_setting
 
@@ -227,16 +231,51 @@ class NeurIPSConfig(ModelConfig):
         default_setting = {
             # training setting
             #开始都是50
-            'n_epochs': 10,
+            'n_epochs': 20,
             'batch_size': 32,
             'train': True,
             'show': True,
-            'learning_rate': 0.003,
+            'learning_rate': 0.0001,
             'max_grad_norm': 10.0,
             'use_ogive_model': False,
             # dataset param
             'seq_len': 50,
             'n_questions': 1100,
+            'data_dir': './data/NeurIPS',
+            'data_name': 'NeurIPS',
+            # DKVMN param
+            'memory_size': 50,
+            'key_memory_state_dim': 50,
+            'value_memory_state_dim': 100,
+            'summary_vector_output_dim': 50,
+            'forget_cycle': 600000,
+            # parameter for the SA Network and KCD network
+            'student_ability_layer_structure': None,
+            'question_difficulty_layer_structure': None,
+            'discimination_power_layer_structure': None,
+            # parameter for the forget matrix
+            'max_random_time': 1568000000.,
+            'min_random_time': 1400000000.
+        }
+        return default_setting
+
+
+
+class EdNetConfig(ModelConfig):
+    def get_default_setting(self):
+        default_setting = {
+            # training setting
+            #开始都是50
+            'n_epochs': 20,
+            'batch_size': 32,
+            'train': True,
+            'show': True,
+            'learning_rate': 0.0003,
+            'max_grad_norm': 10.0,
+            'use_ogive_model': False,
+            # dataset param
+            'seq_len': 50,
+            'n_questions': 1000,
             'data_dir': './data/NeurIPS',
             'data_name': 'NeurIPS',
             # DKVMN param
@@ -250,7 +289,41 @@ class NeurIPSConfig(ModelConfig):
             'question_difficulty_layer_structure': None,
             'discimination_power_layer_structure': None,
             # parameter for the forget matrix
-            'max_random_time': 1568000000.,
-            'min_random_time': 1400000000.
+            'max_random_time': 1500957736.,
+            'min_random_time': 1500957636.
+        }
+        return default_setting
+
+
+class Statics2011Config(ModelConfig):
+    def get_default_setting(self):
+        default_setting = {
+            # training setting
+            #开始都是50
+            'n_epochs': 10,
+            'batch_size': 32,
+            'train': True,
+            'show': True,
+            'learning_rate': 0.003,
+            'max_grad_norm': 10.0,
+            'use_ogive_model': False,
+            # dataset param
+            'seq_len': 50,
+            'n_questions': 1223,
+            'data_dir': './data/NeurIPS',
+            'data_name': 'NeurIPS',
+            # DKVMN param
+            'memory_size': 50,
+            'key_memory_state_dim': 50,
+            'value_memory_state_dim': 100,
+            'summary_vector_output_dim': 50,
+            'forget_cycle': 6000000,
+            # parameter for the SA Network and KCD network
+            'student_ability_layer_structure': None,
+            'question_difficulty_layer_structure': None,
+            'discimination_power_layer_structure': None,
+            # parameter for the forget matrix
+            'max_random_time': 1313991370.,
+            'min_random_time': 1313990000.
         }
         return default_setting
