@@ -30,7 +30,7 @@ def binaryEntropy(label, pred, mod="avg"):
         assert False
 
 
-def run_model(model, args, q_data, qa_data, t_data, mode="train"):
+def run_model(model, args, q_data, qa_data, t_data, mode):
     '''
      Run one epoch
     :param model: the KVFGKTModel

@@ -197,7 +197,7 @@ class FSAIConfig(ModelConfig):
     def get_default_setting(self):
         default_setting = {
             # training setting
-            'n_epochs': 10,
+            'n_epochs': 5,
             'batch_size': 32,
             'train': True,
             'show': True,
@@ -231,7 +231,7 @@ class NeurIPSConfig(ModelConfig):
         default_setting = {
             # training setting
             #开始都是50
-            'n_epochs': 20,
+            'n_epochs': 15,
             'batch_size': 32,
             'train': True,
             'show': True,
@@ -244,11 +244,11 @@ class NeurIPSConfig(ModelConfig):
             'data_dir': './data/NeurIPS',
             'data_name': 'NeurIPS',
             # DKVMN param
-            'memory_size': 50,
+            'memory_size': 20,
             'key_memory_state_dim': 50,
-            'value_memory_state_dim': 100,
+            'value_memory_state_dim': 150,
             'summary_vector_output_dim': 50,
-            'forget_cycle': 600000,
+            'forget_cycle': 6000,
             # parameter for the SA Network and KCD network
             'student_ability_layer_structure': None,
             'question_difficulty_layer_structure': None,

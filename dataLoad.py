@@ -94,8 +94,6 @@ class DataLoader():
             qa_data_array[i, :len(_qa_data)] = _qa_data
             t_data_array[i, :len(_t_data)] = _t_data
 
-        print(qa_data_array)
-
         return q_data_array, qa_data_array, t_data_array
 
     def transDateFormat(self, curTime):

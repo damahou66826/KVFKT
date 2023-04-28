@@ -59,28 +59,17 @@ for directory in [args.checkpoint_dir, args.result_log_dir, args.tensorboard_dir
         os.makedirs(directory)
 
 
-
-def train(model, train_q_data, train_qa_data, train_t_data,
-          valid_q_data, valid_qa_data, valid_t_data, result_log_path, args):
+def valid(model, valid_q_data, valid_qa_data, valid_t_data, result_log_path, args):
     saver = tf.train.Saver()
     best_loss = 1e6
     best_acc = 0.0
     best_auc = 0.0
     best_epoch = 0.0
-
     with open(result_log_path, 'w') as f:
-        result_msg = "{},{},{},{},{},{},{}\n".format(
-            'epoch',
-            'train_auc', 'train_accuracy', 'train_loss',
-            'valid_auc', 'valid_accuracy', 'valid_loss'
+        result_msg = "{},{},{},{}\n".format(
+            'epoch', 'valid_auc', 'valid_accuracy', 'valid_loss'
         )
         f.write(result_msg)
-    for epoch in range(args.n_epochs):
-        # 核心步骤， 跑模型   拿结果
-        # 训练集： 损失 ， 准确率 ， AUC
-        train_loss, train_accuracy, train_auc = run_model(
-            model, args, train_q_data, train_qa_data, train_t_data, mode='train'
-        )
 
         # 测试集： 损失， 准确率 ，AUC
         valid_loss, valid_accuracy, valid_auc = run_model(
@@ -89,22 +78,53 @@ def train(model, train_q_data, train_qa_data, train_t_data,
 
         # add to log
         # %\t 是对 \t进行转义
-        msg = "\n[Epoch {}/{}] Training result:      AUC: {:.2f}%\t Acc: {:.2f}%\t Loss: {:.4f}".format(
-            epoch + 1, args.n_epochs, train_auc * 100, train_accuracy * 100, train_loss
-        )
-        msg += "\n[Epoch {}/{}] Validation result:    AUC: {:.2f}%\t Acc: {:.2f}%\t Loss: {:.4f}".format(
-            epoch + 1, args.n_epochs, valid_auc * 100, valid_accuracy * 100, valid_loss
+        msg = "\nValidation result:    AUC: {:.2f}%\t Acc: {:.2f}%\t Loss: {:.4f}".format(
+            valid_auc * 100, valid_accuracy * 100, valid_loss
         )
         logger.info(msg)
 
         # write epoch result
         with open(result_log_path, 'a') as f:
-            result_msg = "{},{},{},{},{},{},{}\n".format(
-                epoch,
-                train_auc, train_accuracy, train_loss,
-                valid_auc, valid_accuracy, valid_loss
+            result_msg = "{},{},{},{}\n".format(
+                1, valid_auc, valid_accuracy, valid_loss
             )
             f.write(result_msg)
+
+        # save the model if the loss is lower
+        if valid_loss < best_loss:
+            best_loss = valid_loss
+            best_acc = valid_accuracy
+            best_auc = valid_auc
+            best_epoch = 1  # 因为epoch从0开始的
+
+        msg = "\nValidation result best result: AUC: {:.2f}\t Accuracy: {:.2f}\t Loss: {:.4f}".format(
+             best_auc * 100, best_acc * 100, best_loss
+        )
+        logger.info(msg)
+        logger.info("===============================================next cross validation========================================================")
+        return best_auc, best_acc, best_loss
+
+
+def train(model, train_q_data, train_qa_data, train_t_data, args):
+    saver = tf.train.Saver()
+    best_loss = 1e6
+    best_acc = 0.0
+    best_auc = 0.0
+    best_epoch = 0.0
+
+    for epoch in range(args.n_epochs):
+        # 核心步骤， 跑模型   拿结果
+        # 训练集： 损失 ， 准确率 ， AUC
+        train_loss, train_accuracy, train_auc = run_model(
+            model, args, train_q_data, train_qa_data, train_t_data, mode='train'
+        )
+
+        # add to log
+        # %\t 是对 \t进行转义
+        msg = "\n[Epoch {}/{}] Training result:      AUC: {:.2f}%\t Acc: {:.2f}%\t Loss: {:.4f}".format(
+            epoch + 1, args.n_epochs, train_auc * 100, train_accuracy * 100, train_loss
+        )
+        logger.info(msg)
 
         # add to tensorboard
         # 允许训练程序调用方法直接从训练循环中将数据添加到文件中，而不会减慢训练的速度
@@ -112,25 +132,22 @@ def train(model, train_q_data, train_qa_data, train_t_data,
             value=[
                 tf.Summary.Value(tag="train_loss", simple_value=train_loss),
                 tf.Summary.Value(tag="train_auc", simple_value=train_auc),
-                tf.Summary.Value(tag="train_accuracy", simple_value=train_accuracy),
-                tf.Summary.Value(tag="valid_loss", simple_value=valid_loss),
-                tf.Summary.Value(tag="valid_auc", simple_value=valid_auc),
-                tf.Summary.Value(tag="valid_accuracy", simple_value=valid_accuracy),
+                tf.Summary.Value(tag="train_accuracy", simple_value=train_accuracy)
             ]
         )
         model.tensorboard_writer.add_summary(tf_summary, epoch)
 
         # save the model if the loss is lower
-        if valid_loss < best_loss:
-            best_loss = valid_loss
-            best_acc = valid_accuracy
-            best_auc = valid_auc
+        if train_loss < best_loss:
+            best_loss = train_loss
+            best_acc = train_accuracy
+            best_auc = train_auc
             best_epoch = epoch + 1  # 因为epoch从0开始的
 
             if args.save:
                 # 从参数中读取是否保存每一次训练后的模型
                 model_dir = "ep{:03d}-auc{:.0f}-acc{:.0f}".format(
-                    epoch + 1, valid_auc * 100, valid_accuracy * 100,
+                    epoch + 1, train_auc * 100, train_accuracy * 100,
                 )
                 model_name = "Deep-IRT"
                 save_path = os.path.join(args.checkpoint_dir, model_dir, model_name)
@@ -141,12 +158,14 @@ def train(model, train_q_data, train_qa_data, train_t_data,
             else:
                 logger.info("Model improved.")
 
+
+
     # print out the final result
     msg = "Best result at epoch {}: AUC: {:.2f}\t Accuracy: {:.2f}\t Loss: {:.4f}".format(
         best_epoch, best_auc * 100, best_acc * 100, best_loss
     )
     logger.info(msg)
-    return best_auc, best_acc, best_loss
+    return model
 
 
 def cross_validation():
@@ -158,10 +177,9 @@ def cross_validation():
     if args.cpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
     aucs, accs, losses = list(), list(), list()
-    # 跑5组对应的训练集与验证集    取平均
-    for i in range(1):  # 默认为5
+    # 跑5组对应的训练集与验证集    取平均 (5-fold cross_validation)
+    for i in range(5):  # 默认为5
         # 每次都会重新清除已有的node
-        # tf.reset_default_graph()  deprecated
         tf.compat.v1.reset_default_graph()
         logger.info("Cross Validation {}".format(i + 1))
         result_csv_path = os.path.join(args.result_log_dir, 'fold-{}-result'.format(i) + '.csv')
@@ -172,26 +190,32 @@ def cross_validation():
             model = KVFKTModel(args, sess)  # 拿到model
             sess.run(tf.global_variables_initializer())  # 开始跑  初始化参数
             if args.train:
-                # 每次加载第i组数据进行训练
-                train_data_path = os.path.join(args.data_dir, args.data_name + '_train{}.csv'.format(i))
-                valid_data_path = os.path.join(args.data_dir, args.data_name + '_valid{}.csv'.format(i))
-                logger.info("Reading {} and {}".format(train_data_path, valid_data_path))
+                for j in range(5):
+                    # 正好抽出第i组来做验证
+                    if i == j:
+                        continue
+                    # 每次加载第i组数据进行训练
+                    logger.info("training the {}th dataset".format(j))
+                    train_data_path = os.path.join(args.data_dir, args.data_name + '_{}.csv'.format(j))
+                    logger.info("Reading {}".format(train_data_path))
+                    train_q_data, train_qa_data, train_t_data = data_loader.load_data(train_data_path)
+                    model = train(
+                        # 核心逻辑！！！！
+                        model,
+                        train_q_data, train_qa_data, train_t_data,
+                        args=args
+                    )
 
-                train_q_data, train_qa_data, train_t_data = data_loader.load_data(train_data_path)
-                valid_q_data, valid_qa_data, valid_t_data = data_loader.load_data(valid_data_path)
+            valid_data_path = os.path.join(args.data_dir, args.data_name + '_{}.csv'.format(i))
+            valid_q_data, valid_qa_data, valid_t_data = data_loader.load_data(valid_data_path)
+            # 拿余下的一组数据进行验证
+            auc, acc, loss = valid(model, valid_q_data, valid_qa_data, valid_t_data,
+                                       result_log_path=result_csv_path, args=args)
+            aucs.append(auc)
+            accs.append(acc)
+            losses.append(loss)
 
-                auc, acc, loss = train(
-                    # 核心逻辑！！！！
-                    model,
-                    train_q_data, train_qa_data, train_t_data,
-                    valid_q_data, valid_qa_data, valid_t_data,
-                    result_log_path=result_csv_path,
-                    args=args
-                )
 
-                aucs.append(auc)
-                accs.append(acc)
-                losses.append(loss)
 
     cross_validation_msg = "Cross Validation Result:\n"
     cross_validation_msg += "AUC: {:.2f} +/- {:.2f}\n".format(np.average(aucs) * 100, np.std(aucs) * 100)
