@@ -200,6 +200,13 @@ def cross_validation():
     logger.info(cross_validation_msg)
 
     # write result
+    result_msg = writeResult(aucs, accs, losses)
+    with open('results/all_result.csv', 'a') as f:
+        f.write(result_msg)
+
+
+
+def writeResult(aucs, accs, losses):
     result_msg = datetime.datetime.now().strftime("%Y-%m-%dT%H%M") + ','
     result_msg += str(args.dataset) + ','
     result_msg += str(args.memory_size) + ','
@@ -214,8 +221,9 @@ def cross_validation():
     result_msg += str(np.std(accs) * 100) + ','
     result_msg += str(np.average(losses)) + ','
     result_msg += str(np.std(losses)) + '\n'
-    with open('results/all_result.csv', 'a') as f:
-        f.write(result_msg)
+    return result_msg
+
+
 
 
 if __name__ == '__main__':

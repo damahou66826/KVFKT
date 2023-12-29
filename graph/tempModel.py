@@ -6,10 +6,11 @@ import tensorflow as tf
 from tensorflow_core.contrib import layers
 import tensorflow.distributions as tfd
 from memory import DKVMN
+from model import KVFKTModel
 from utils import getLogger
 
 # set logger
-logger = getLogger('KVFKT')
+logger = getLogger('tempModel')
 
 
 def tensor_description(var):
@@ -29,10 +30,7 @@ def tensor_description(var):
     return description
 
 
-class KVFKTModel(object):
-    '''
-    Key-Memory-Forget Knowledge Trace
-    '''
+class tempModel(KVFKTModel):
 
     def __init__(self, args, sess, name="KVFKT"):
         self.args = args
@@ -41,28 +39,16 @@ class KVFKTModel(object):
         self.create_model()
 
     def create_model(self):
-        self._create_placeholder()
+        super(tempModel, self)._create_placeholder()
         self._influence()
-        self._create_loss()
-        self._create_optimizer()
-        self._add_summary()
+        super(tempModel, self)._create_loss()
+        super(tempModel, self)._create_optimizer()
+        super(tempModel, self)._add_summary()
 
-    def _create_placeholder(self):
+    def __influence__(self):
         '''
-        创建对应数据格式
-        :return:  null
-        '''
-        logger.info("Initializing Placeholder")
-        self.q_data = tf.placeholder(tf.int32, [self.args.batch_size, self.args.seq_len], name='q_data')
-        self.qa_data = tf.placeholder(tf.int32, [self.args.batch_size, self.args.seq_len], name='qa_data')
-        self.t_data = tf.placeholder(tf.float32, [self.args.batch_size, self.args.seq_len], name='t_data')
-        '''可以考虑再把学生天赋给添加进来'''
-        self.label = tf.placeholder(tf.float32, [self.args.batch_size, self.args.seq_len], name='label')
-
-    def _influence(self):
-        '''
-        initialize memory
-        :return:
+            initialize memory
+            :return:
         '''
         logger.info("Initializing Key and Value Memory")
         with tf.variable_scope("Memory"):
@@ -76,7 +62,8 @@ class KVFKTModel(object):
             )
             init_forget_memory = tf.get_variable(
                 'forget_memory_matrix', [self.args.memory_size],
-                initializer = tf.random_uniform_initializer(maxval=self.args.max_random_time, minval=self.args.min_random_time, seed=0)
+                initializer=tf.random_uniform_initializer(maxval=self.args.max_random_time,
+                                                          minval=self.args.min_random_time, seed=0)
             )
             # 1568000000
         init_value_memory = tf.tile(
@@ -236,88 +223,8 @@ class KVFKTModel(object):
         logger.debug("Shape of student_abilities: {}".format(self.student_abilities))
         logger.debug("Shape of question_difficulties: {}".format(self.question_difficulties))
 
-    def _create_loss(self):
-        logger.info("Initializing Loss Function")
 
-        # convert into 1D
-        label_1d = tf.reshape(self.label, [-1])
-        pred_z_values_1d = tf.reshape(self.pred_z_values, [-1])
-        student_abilities_1d = tf.reshape(self.student_abilities, [-1])
-        question_difficulties_1d = tf.reshape(self.question_difficulties, [-1])
-
-        # find the label index that is not masking
-        #  label_1d != -1
-        index = tf.where(tf.not_equal(label_1d, tf.constant(-1., dtype=tf.float32)))
-
-        # masking
-        filtered_label = tf.gather(label_1d, index)
-        filtered_z_values = tf.gather(pred_z_values_1d, index)
-        filtered_student_abilities = tf.gather(student_abilities_1d, index)
-        filtered_question_difficulties = tf.gather(question_difficulties_1d, index)
-        logger.debug("Shape of filtered_label: {}".format(filtered_label))
-        logger.debug("Shape of filtered_z_values: {}".format(filtered_z_values))
-        logger.debug("Shape of filtered_student_abilities: {}".format(filtered_student_abilities))
-        logger.debug("Shape of filtered_question_difficulties: {}".format(filtered_question_difficulties))
-
-        if self.args.use_ogive_model:
-            # make prediction using normal ogive model
-            dist = tfd.Normal(loc=0.0, scale=1.0)
-            self.pred = dist.cdf(pred_z_values_1d)
-            filtered_pred = dist.cdf(filtered_z_values)
-        else:
-            self.pred = tf.math.sigmoid(pred_z_values_1d)
-            filtered_pred = tf.math.sigmoid(filtered_z_values)
-
-        # convert the prediction probability to logit, i.e., log(p/(1-p))
-        epsilon = 1e-6
-        clipped_filtered_pred = tf.clip_by_value(filtered_pred, epsilon, 1. - epsilon)
-        filtered_logits = tf.log(clipped_filtered_pred / (1 - clipped_filtered_pred))
-
-        # cross entropy loss
-        cross_entropy = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=filtered_logits,  # 预测结果
-                labels=filtered_label  # 标签值   两个参数的shape 和  type一样
-            )
-        )
-
-        self.loss = cross_entropy
-
-    def _create_optimizer(self):
-        with tf.variable_scope('Optimizer'):
-            self.optimizer = tf.train.AdamOptimizer(learning_rate=self.args.learning_rate)
-            gvs = self.optimizer.compute_gradients(self.loss)
-            clipped_gvs = [(tf.clip_by_norm(grad, self.args.max_grad_norm), var) for grad, var in gvs]
-            self.train_op = self.optimizer.apply_gradients(clipped_gvs)
-
-    def _add_summary(self):
-        tf.summary.scalar('Loss', self.loss)
-        self.tensorboard_writer = tf.summary.FileWriter(
-            logdir=self.args.tensorboard_dir,
-            graph=self.sess.graph
-        )
-
-        model_vars = tf.trainable_variables()
-
-        total_size = 0
-        total_bytes = 0
-        model_msg = ""
-        for var in model_vars:
-            # if var.num_elements() is None or [] assume size 0.
-            var_size = var.get_shape().num_elements() or 0
-            var_bytes = var_size * var.dtype.size
-            total_size += var_size
-            total_bytes += var_bytes
-            model_msg += ' '.join(
-                [var.name,
-                 tensor_description(var),
-                 '[%d, bytes: %d]' % (var_size, var_bytes)]
-            )
-            model_msg += '\n'
-        model_msg += 'Total size of variables: %d \n' % total_size
-        model_msg += 'Total bytes of variables: %d \n' % total_bytes
-        logger.info(model_msg)
 
 
 if __name__ == '__main__':
-    print("lalala")
+    tempModel = tempModel()

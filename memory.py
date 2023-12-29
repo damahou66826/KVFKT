@@ -8,7 +8,7 @@ import time
 
 # set logger
 
-logger = getLogger('zijideming')
+logger = getLogger('kvfkt')
 
 '''
 每个记忆单元  ：

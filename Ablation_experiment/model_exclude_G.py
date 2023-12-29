@@ -9,7 +9,7 @@ from memory import DKVMN
 from utils import getLogger
 
 # set logger
-logger = getLogger('KVFKT')
+logger = getLogger('KVFKTModelExcludeGuess')
 
 
 def tensor_description(var):
@@ -29,12 +29,12 @@ def tensor_description(var):
     return description
 
 
-class KVFKTModel(object):
+class KVFKTModelExcludeGuess(object):
     '''
     Key-Memory-Forget Knowledge Trace
     '''
 
-    def __init__(self, args, sess, name="KVFKT"):
+    def __init__(self, args, sess, name="KVFKTModelExcludeGuess"):
         self.args = args
         self.sess = sess
         self.name = name

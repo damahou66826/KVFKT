@@ -5,13 +5,11 @@ import numpy as np
 import tensorflow as tf
 import os
 from dataLoad import DataLoader
-from model import KVFKTModel
+from Ablation_experiment import model_exclude_F,model_exclude_D,model_exclude_G,model_exclude_IRT
 from runModel import run_model
 from utils import getLogger
-from configs import ModelConfigFactory
+from ablation_config import ModelConfigFactory
 
-# set logger
-logger = getLogger('KVFKT-model')
 
 # argument parser
 parser = argparse.ArgumentParser()
@@ -47,8 +45,16 @@ parser.add_argument('--forget_cycle', type=int, default=None)
 parser.add_argument('--max_random_time', type=int, default=None)
 parser.add_argument('--min_random_time', type=int, default=None)
 
+# ablation_experiment parameter
+parser.add_argument('--ablation_experiment_parameter', type=str, default='D')
+
 _args = parser.parse_args()
 args = ModelConfigFactory.create_model_config(_args)
+
+# set logger
+logger = getLogger('ablation-KVFKT-model' + str(args.ablation_experiment_parameter))
+
+
 logger.info("Model Config: {}".format(args))
 
 # create directory
@@ -67,7 +73,7 @@ def valid(model, valid_q_data, valid_qa_data, valid_t_data, result_log_path, arg
     best_epoch = 0.0
     with open(result_log_path, 'w') as f:
         result_msg = "{},{},{},{},{}\n".format(
-            'epoch', 'valid_auc', 'valid_accuracy', 'valid_rmse', 'valid_loss'
+            'epoch', 'valid_auc', 'valid_accuracy', 'valid_rmse','valid_loss'
         )
         f.write(result_msg)
 
@@ -99,11 +105,10 @@ def valid(model, valid_q_data, valid_qa_data, valid_t_data, result_log_path, arg
             best_epoch = 1  # 因为epoch从0开始的
 
         msg = "\nValidation result best result: AUC: {:.2f}\t Accuracy: {:.2f}\t RMSE: {:.2f}\t Loss: {:.4f}".format(
-            best_auc * 100, best_acc * 100, best_rmse * 100, best_loss
+             best_auc * 100, best_acc * 100, best_rmse * 100, best_loss
         )
         logger.info(msg)
-        logger.info(
-            "===============================================next cross validation========================================================")
+        logger.info("===============================================next cross validation========================================================")
         return best_auc, best_acc, best_rmse, best_loss
 
 
@@ -161,6 +166,8 @@ def train(model, train_q_data, train_qa_data, train_t_data, args):
             else:
                 logger.info("Model improved.")
 
+
+
     # print out the final result
     msg = "Best result at epoch {}: AUC: {:.2f}\t Accuracy: {:.2f}\t RMSE: {:.2f}\t Loss: {:.4f}".format(
         best_epoch, best_auc * 100, best_acc * 100, best_rmse * 100, best_loss
@@ -188,7 +195,7 @@ def cross_validation():
         # 创建一个tensorflow容器
         with tf.Session(config=config) as sess:
             data_loader = DataLoader(args.n_questions, args.seq_len, ',')  # 拿到数据加载器
-            model = KVFKTModel(args, sess)
+            model = getModel(sess)
             sess.run(tf.global_variables_initializer())  # 开始跑  初始化参数
             if args.train:
                 for j in range(5):
@@ -211,11 +218,13 @@ def cross_validation():
             valid_q_data, valid_qa_data, valid_t_data = data_loader.load_data(valid_data_path)
             # 拿余下的一组数据进行验证
             auc, acc, rmse, loss = valid(model, valid_q_data, valid_qa_data, valid_t_data,
-                                         result_log_path=result_csv_path, args=args)
+                                       result_log_path=result_csv_path, args=args)
             aucs.append(auc)
             accs.append(acc)
             losses.append(loss)
             rmses.append(rmse)
+
+
 
     cross_validation_msg = "Cross Validation Result:\n"
     cross_validation_msg += "AUC: {:.2f} +/- {:.2f}\n".format(np.average(aucs) * 100, np.std(aucs) * 100)
@@ -228,6 +237,18 @@ def cross_validation():
     result_msg = writeResult(aucs, accs, rmses, losses)
     with open('results/all_result.csv', 'a') as f:
         f.write(result_msg)
+
+
+def getModel(sess):
+    tempStr = args.ablation_experiment_parameter
+    if tempStr == 'D':
+        return model_exclude_D.KVFKTModelExcludeDifficult(args, sess)
+    elif tempStr == 'F':
+        return model_exclude_F.KVFKTModelExcludeForget(args, sess)
+    elif tempStr == 'G':
+        return model_exclude_G.KVFKTModelExcludeGuess(args, sess)
+    elif tempStr == 'IRT':
+        return model_exclude_IRT.KVFKTModelExcludeIRT(args, sess)
 
 
 def writeResult(aucs, accs, rmse, losses):

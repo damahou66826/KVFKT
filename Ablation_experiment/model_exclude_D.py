@@ -9,7 +9,7 @@ from memory import DKVMN
 from utils import getLogger
 
 # set logger
-logger = getLogger('KVFKT')
+logger = getLogger('KVFKTModelExcludeDifficult')
 
 
 def tensor_description(var):
@@ -29,12 +29,12 @@ def tensor_description(var):
     return description
 
 
-class KVFKTModel(object):
+class KVFKTModelExcludeDifficult(object):
     '''
     Key-Memory-Forget Knowledge Trace
     '''
 
-    def __init__(self, args, sess, name="KVFKT"):
+    def __init__(self, args, sess, name="KVFKTModelExcludeDifficult"):
         self.args = args
         self.sess = sess
         self.name = name
@@ -56,7 +56,6 @@ class KVFKTModel(object):
         self.q_data = tf.placeholder(tf.int32, [self.args.batch_size, self.args.seq_len], name='q_data')
         self.qa_data = tf.placeholder(tf.int32, [self.args.batch_size, self.args.seq_len], name='qa_data')
         self.t_data = tf.placeholder(tf.float32, [self.args.batch_size, self.args.seq_len], name='t_data')
-        '''可以考虑再把学生天赋给添加进来'''
         self.label = tf.placeholder(tf.float32, [self.args.batch_size, self.args.seq_len], name='label')
 
     def _influence(self):
@@ -205,20 +204,11 @@ class KVFKTModel(object):
                 activation_fn=None
             )
 
-            # Calculate the question difficulty level from the question embedding
-            question_difficulty = layers.fully_connected(
-                inputs=q,
-                num_outputs=1,
-                scope='QuestionDifficultyOutputLayer',
-                reuse=reuse_flag,
-                activation_fn=tf.nn.tanh
-            )
 
             # Prediction
-            pred_z_value = 3.0 * student_ability - question_difficulty
+            pred_z_value = 3.0 * student_ability
             pred_z_values.append(pred_z_value)
             student_abilities.append(student_ability)
-            question_difficulties.append(question_difficulty)
 
         self.pred_z_values = tf.reshape(
             tf.stack(pred_z_values, axis=1),
@@ -228,13 +218,9 @@ class KVFKTModel(object):
             tf.stack(student_abilities, axis=1),  # 按着y维度去叠加
             [self.args.batch_size, self.args.seq_len]
         )
-        self.question_difficulties = tf.reshape(
-            tf.stack(question_difficulties, axis=1),
-            [self.args.batch_size, self.args.seq_len]
-        )
+
         logger.debug("Shape of pred_z_values: {}".format(self.pred_z_values))
         logger.debug("Shape of student_abilities: {}".format(self.student_abilities))
-        logger.debug("Shape of question_difficulties: {}".format(self.question_difficulties))
 
     def _create_loss(self):
         logger.info("Initializing Loss Function")
@@ -243,7 +229,6 @@ class KVFKTModel(object):
         label_1d = tf.reshape(self.label, [-1])
         pred_z_values_1d = tf.reshape(self.pred_z_values, [-1])
         student_abilities_1d = tf.reshape(self.student_abilities, [-1])
-        question_difficulties_1d = tf.reshape(self.question_difficulties, [-1])
 
         # find the label index that is not masking
         #  label_1d != -1
@@ -253,11 +238,9 @@ class KVFKTModel(object):
         filtered_label = tf.gather(label_1d, index)
         filtered_z_values = tf.gather(pred_z_values_1d, index)
         filtered_student_abilities = tf.gather(student_abilities_1d, index)
-        filtered_question_difficulties = tf.gather(question_difficulties_1d, index)
         logger.debug("Shape of filtered_label: {}".format(filtered_label))
         logger.debug("Shape of filtered_z_values: {}".format(filtered_z_values))
         logger.debug("Shape of filtered_student_abilities: {}".format(filtered_student_abilities))
-        logger.debug("Shape of filtered_question_difficulties: {}".format(filtered_question_difficulties))
 
         if self.args.use_ogive_model:
             # make prediction using normal ogive model

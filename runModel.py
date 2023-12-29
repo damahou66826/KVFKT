@@ -17,6 +17,8 @@ def compute_accuracy(all_label, all_pred):
     all_pred[all_pred <= 0.5] = 0.0
     return metrics.accuracy_score(all_label, all_pred)
 
+def compute_root_mean_square_error(all_lable, all_pred):
+    return math.sqrt(metrics.mean_squared_error(all_lable, all_pred))
 
 def binaryEntropy(label, pred, mod="avg"):
     loss = label * np.log(np.maximum(1e-10, pred)) + \
@@ -106,5 +108,6 @@ def run_model(model, args, q_data, qa_data, t_data, mode):
     auc = compute_auc(all_label, all_pred)
     accuracy = compute_accuracy(all_label, all_pred)
     loss = binaryEntropy(all_label, all_pred)
+    rmse = compute_root_mean_square_error(all_label, all_pred)
 
-    return loss, accuracy, auc
+    return loss, accuracy, auc, rmse
